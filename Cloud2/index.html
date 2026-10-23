@@ -17,12 +17,9 @@
       <button type="button" id="soundToggleBtn" class="tool-pill active" title="Toggle interface sounds">
         🔊 SOUND ON
       </button>
-      <button type="button" id="apiConfigBtn" class="tool-pill" title="Configure Python Flask / AWS API Endpoint">
-        ⚙ CLOUD ENDPOINT
-      </button>
       <div id="liveBadgeBox" class="live">
         <i></i>
-        <b id="mode">DEMO MODE</b>
+        <b id="mode">AWS LIVE API MODE</b>
         <small>VIRTUAL UNIT LT•01</small>
       </div>
     </div>
@@ -47,7 +44,7 @@
         </div>
         <div class="spec-chip">
           <strong>CLOUD STACK</strong>
-          Flask · API Gateway · Lambda · DynamoDB
+          API Gateway · Lambda · DynamoDB
         </div>
       </div>
     </section>
@@ -170,7 +167,7 @@
           </div>
 
           <div class="device-bottom">
-            VIRTUAL DEVICE DEMO <span>● 3.3V LOGIC</span>
+            BROWSER DEVICE SIMULATOR <span>● 3.3V LOGIC</span>
           </div>
         </div>
 
@@ -205,15 +202,8 @@
           </form>
 
           <div class="demo">
-            <div class="demo-header">
-              <span id="demoCodesLabel">SAVED SHORT CODES:</span>
-              <span id="demoCodesHint">CLICK TO TEST</span>
-            </div>
-            <div class="demo-chips" id="demoChipsContainer">
-              <!-- Populated dynamically from DEMO_URLS in app.js -->
-            </div>
-
-            <!-- Add a mapping to the selected backend mode -->
+            <!-- Live deployment: mappings are stored in DynamoDB. The browser does not list all cloud items. -->
+            <!-- Add a mapping directly to the AWS API -->
             <details class="add-mapping-details">
               <summary class="add-mapping-summary">+ Add a short code and destination</summary>
               <form id="addMappingForm" class="add-mapping-form">
@@ -279,7 +269,7 @@
             </div>
             <div class="arch-node" id="hopApiGw">
               <b>02. API GW</b>
-              Flask / REST
+              HTTPS / REST
             </div>
             <div class="arch-node" id="hopLambda">
               <b>03. LAMBDA</b>
@@ -329,25 +319,6 @@
     <span>LINK TERMINAL (LT•01) / IOT &amp; CLOUD COMPUTING PROJECT</span>
     <span>ESP32 · OLED · AWS API · DynamoDB</span>
   </footer>
-
-  <!-- CLOUD API ENDPOINT CONFIGURATION MODAL -->
-  <div id="apiModal" class="modal-backdrop" hidden>
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="apiModalTitle">
-      <h3 id="apiModalTitle">Configure Cloud Backend</h3>
-      <p>
-Configure the base URL of your deployed API. Live mode uses <code>GET /api/resolve/&lt;SHORT_CODE&gt;</code> to look up links and <code>POST /api/links</code> to save them. Demo mode uses browser data only, not DynamoDB.
-      </p>
-      <div class="modal-field">
-        <label for="apiBaseInput">FLASK / EC2 / API GATEWAY BASE URL</label>
-        <input id="apiBaseInput" type="url" placeholder="http://127.0.0.1:5000">
-      </div>
-      <div class="modal-actions">
-        <button type="button" id="closeApiModalBtn" class="tool-pill">Cancel</button>
-        <button type="button" id="useDemoModeBtn" class="tool-pill">Use Demo Mode</button>
-        <button type="button" id="saveApiModeBtn" class="tool-pill active">Connect Live API</button>
-      </div>
-    </div>
-  </div>
 
   <div id="toast" role="status"></div>
   <script src="app.js" defer></script>

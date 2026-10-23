@@ -2,9 +2,9 @@
 // LINK TERMINAL (LT•01) — Physical URL Shortener Hardware & Cloud Controller
 // Live API and browser-only demo resolver for the Link Terminal interface.
 // ============================================================================
-let API_BASE = ""; // Example: "http://127.0.0.1:5000" or "http://YOUR_EC2_PUBLIC_IP"
-let USE_DEMO_DATA = true;
-const API_CONFIG_STORAGE_KEY = "link-terminal-api-config-v1";
+const API_BASE = "https://u3ykuix7nf.execute-api.us-east-1.amazonaws.com";
+// Deployed build is intentionally Live-API-only. No browser demo fallback.
+const USE_DEMO_DATA = false;
 
 const DEMO_URLS = {
   LAB42: "https://docs.aws.amazon.com/",
@@ -46,38 +46,6 @@ function responseMessage(data, fallback) {
   const message = data && (data.error || data.message);
   return typeof message === "string" && message.trim() ? message : fallback;
 }
-
-function persistApiConfig() {
-  try {
-    localStorage.setItem(API_CONFIG_STORAGE_KEY, JSON.stringify({
-      mode: USE_DEMO_DATA ? "demo" : "live",
-      baseUrl: API_BASE
-    }));
-    return true;
-  } catch (error) {
-    logSerial("CFG_ERR", `Could not persist API settings: ${error.message}`);
-    return false;
-  }
-}
-
-function restoreApiConfig() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(API_CONFIG_STORAGE_KEY) || "null");
-    if (!saved) return;
-    if ((saved.mode !== "demo" && saved.mode !== "live") || typeof saved.baseUrl !== "string") {
-      throw new Error("Saved API settings are invalid.");
-    }
-    API_BASE = normalizeApiBase(saved.baseUrl);
-    USE_DEMO_DATA = saved.mode !== "live";
-  } catch (error) {
-    API_BASE = "";
-    USE_DEMO_DATA = true;
-    logSerial("CFG_ERR", `Could not restore API settings: ${error.message}`);
-    toast("Saved API settings could not be restored. Reconnect the Live API if needed.");
-  }
-}
-
-
 
 // Character wheel includes A-Z, 0-9, plus 2 hardware action tokens:
 // "✓" (Submit/Resolve directly from 3-button keypad) and "⌫" (Backspace)
@@ -276,29 +244,13 @@ function renderPickerWheel() {
 
 // Render Demo Chips list dynamically (supports user-added codes!)
 function renderDemoChips() {
+  // This deployment uses the cloud database only; it does not display browser-only demo mappings.
   const container = $("demoChipsContainer");
-  if (!container) return;
-  container.innerHTML = "";
-  $("demoCodesLabel").textContent = USE_DEMO_DATA ? "SAVED SHORT CODES:" : "LOCAL DEMO CODES:";
-  $("demoCodesHint").textContent = USE_DEMO_DATA ? "CLICK TO TEST" : "DEMO MODE ONLY";
-  if (!USE_DEMO_DATA) return;
-
-  Object.keys(DEMO_URLS).forEach((k) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.dataset.code = k;
-    if (k === code) btn.className = "active-chip";
-    btn.textContent = k;
-    btn.title = DEMO_URLS[k];
-    btn.addEventListener("click", () => {
-      code = k;
-      entering = false;
-      playTone("select");
-      render();
-      resolve(code);
-    });
-    container.appendChild(btn);
-  });
+  const label = $("demoCodesLabel");
+  const hint = $("demoCodesHint");
+  if (container) container.hidden = true;
+  if (label) label.hidden = true;
+  if (hint) hint.hidden = true;
 }
 
 function render() {
@@ -727,50 +679,6 @@ if ($("addMappingForm")) {
   });
 }
 
-// Live API Mode Modal Controls
-if ($("apiConfigBtn") && $("apiModal")) {
-  $("apiConfigBtn").addEventListener("click", () => {
-    $("apiBaseInput").value = API_BASE;
-    $("apiModal").hidden = false;
-  });
-  $("closeApiModalBtn").addEventListener("click", () => {
-    $("apiModal").hidden = true;
-  });
-  $("useDemoModeBtn").addEventListener("click", () => {
-    USE_DEMO_DATA = true;
-    $("mode").textContent = "LOCAL DEMO MODE";
-    $("liveBadgeBox").classList.remove("api-active");
-    $("status").textContent = "Demo data stored in this browser";
-    renderDemoChips();
-    const settingsPersisted = persistApiConfig();
-    $("apiModal").hidden = true;
-    logSerial("CFG", "Switched to browser demo data");
-    toast(settingsPersisted
-      ? "Switched to Local Demo Mode."
-      : "Demo mode is active, but the mode setting could not be saved for refresh.");
-  });
-  $("saveApiModeBtn").addEventListener("click", () => {
-    try {
-      API_BASE = normalizeApiBase($("apiBaseInput").value);
-    } catch (error) {
-      toast(error.message || "Enter a valid API base URL.");
-      $("apiBaseInput").focus();
-      return;
-    }
-    USE_DEMO_DATA = false;
-    $("mode").textContent = "FLASK / AWS API MODE";
-    $("liveBadgeBox").classList.add("api-active");
-    $("status").textContent = `Live API mode selected: ${apiEndpoint("resolve/<CODE>")}`;
-    renderDemoChips();
-    const settingsPersisted = persistApiConfig();
-    $("apiModal").hidden = true;
-    logSerial("CFG", `Live API Mode enabled -> ${API_BASE || "/"}`);
-    toast(settingsPersisted
-      ? "Live API mode selected. Resolve or save a code to verify the API."
-      : "Live API mode is active, but its settings could not be saved for refresh.");
-  });
-}
-
 // Keyboard Navigation Support
 document.addEventListener("keydown", (e) => {
   if (e.altKey || e.ctrlKey || e.metaKey) return;
@@ -822,10 +730,8 @@ document.addEventListener("keydown", (e) => {
 })();
 
 // Initialize on load
-restoreApiConfig();
-if (!USE_DEMO_DATA) {
-  $("mode").textContent = "FLASK / AWS API MODE";
-  $("status").textContent = "API mode enabled";
-}
-logSerial("BOOT", "ESP32 Link Terminal LT•01 initialized (I2C OLED 0x3C)");
+$("mode").textContent = "AWS LIVE API MODE";
+$("liveBadgeBox").classList.add("api-active");
+$("status").textContent = `AWS API configured: ${apiEndpoint("resolve/<CODE>")}`;
+logSerial("BOOT", "Link Terminal LT•01 browser simulator initialized (I2C OLED 0x3C)");
 render();
