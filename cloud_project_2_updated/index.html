@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Link Terminal — URL Shortener</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo"><span class="mark">▥</span> LINK<span>TERMINAL</span></div>
+    <div class="top-actions">
+      <button type="button" id="themeToggleBtn" class="pill" aria-pressed="false">☾ Dark mode</button>
+      <div class="live" id="liveBadge"><i></i><b id="liveText">AWS live API</b></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <label class="eyebrow">URL SHORTENER</label>
+      <h1>Short code.<br><em>Direct destination.</em></h1>
+      <p>Save a long web address under a short code, then resolve it any time. Every lookup runs on AWS: API Gateway, Lambda and DynamoDB.</p>
+    </section>
+
+    <section class="grid">
+      <div class="col">
+        <!-- Resolve -->
+        <section class="panel">
+          <div class="panel-head">
+            <div><label>LOOKUP</label><h2>Resolve a link</h2></div>
+          </div>
+          <form id="resolveForm" autocomplete="off">
+            <label for="shortCode">SHORT CODE</label>
+            <div class="input">
+              <span>/</span>
+              <input id="shortCode" maxlength="12" placeholder="e.g. AWS2026" required>
+              <button type="button" id="clearBtn" aria-label="Clear">×</button>
+            </div>
+            <button class="primary" type="submit" id="resolveBtn">Resolve destination <b>→</b></button>
+          </form>
+        </section>
+
+        <!-- Add mapping -->
+        <section class="panel">
+          <div class="panel-head">
+            <div><label>CREATE</label><h2>Add a short code</h2></div>
+          </div>
+          <form id="addForm" autocomplete="off">
+            <label for="newCode">SHORT CODE</label>
+            <input id="newCode" class="field" maxlength="12" placeholder="e.g. MYLINK1" required>
+            <label for="newUrl">DESTINATION URL</label>
+            <input id="newUrl" class="field" type="url" placeholder="https://example.com/page" required>
+            <button class="primary" type="submit" id="saveBtn">Save to cloud <b>→</b></button>
+          </form>
+        </section>
+      </div>
+
+      <div class="col">
+        <!-- Result -->
+        <section class="panel result">
+          <div class="panel-head">
+            <div><label>RESULT</label><h2>Destination</h2></div>
+            <span id="badge" class="badge">WAITING</span>
+          </div>
+
+          <div id="empty" class="empty">
+            <b>↳</b>
+            <p>Resolve a short code to see its destination and a scannable QR code here.</p>
+          </div>
+
+          <div id="result" hidden>
+            <div class="result-top">
+              <div>
+                <label>SHORT CODE</label>
+                <div class="code-row"><h3 id="resultCode">—</h3><span id="latency" class="latency">0 ms</span></div>
+              </div>
+            </div>
+
+            <label>DESTINATION URL</label>
+            <a id="resultUrl" class="url" href="#" target="_blank" rel="noopener noreferrer"></a>
+
+            <div class="actions">
+              <button type="button" id="copyBtn">Copy URL</button>
+              <a id="openBtn" class="btn-link" href="#" target="_blank" rel="noopener noreferrer">Open link ↗</a>
+            </div>
+
+            <div class="qr-wrap">
+              <div class="qr-box"><canvas id="qrCanvas" width="220" height="220" aria-label="QR code of the destination URL"></canvas></div>
+              <div class="qr-text">
+                <label>SCAN TO OPEN</label>
+                <p>Scan this QR code with a phone camera to open the destination link directly.</p>
+                <button type="button" id="qrDownloadBtn">Download QR (PNG)</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Request flow -->
+        <section class="flow-card">
+          <div class="flow-head"><strong>Request flow</strong><span id="flowRoute">GET /api/resolve/&lt;CODE&gt;</span></div>
+          <div class="flow-nodes">
+            <div class="node" id="nodeBrowser"><b>01 Browser</b>fetch()</div>
+            <div class="node" id="nodeApi"><b>02 API Gateway</b>HTTP API</div>
+            <div class="node" id="nodeLambda"><b>03 Lambda</b>LinkTerminalAPI</div>
+            <div class="node" id="nodeDb"><b>04 DynamoDB</b>LinkMappings</div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- Saved codes -->
+    <section class="panel saved">
+      <div class="panel-head">
+        <div><label>DATABASE</label><h2>Saved codes</h2></div>
+        <div class="saved-tools">
+          <span id="savedCount" class="count">—</span>
+          <button type="button" id="refreshBtn" class="pill">↻ Refresh</button>
+        </div>
+      </div>
+      <p id="savedNote" class="note" hidden></p>
+      <div id="savedEmpty" class="empty small" hidden><p>No saved codes yet. Add one above.</p></div>
+      <div class="table-wrap" id="savedWrap" hidden>
+        <table>
+          <thead><tr><th>Code</th><th>Destination</th><th class="right">Action</th></tr></thead>
+          <tbody id="savedBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="status"><i></i><span id="status">Ready</span></div>
+  </main>
+
+  <footer class="footer">
+    <span>LINK TERMINAL · CLOUD COMPUTING COURSE PROJECT</span>
+    <span>S3 · API Gateway · Lambda · DynamoDB</span>
+  </footer>
+
+  <div id="toast" role="status"></div>
+  <script src="qrcode.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
